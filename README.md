@@ -13,6 +13,7 @@ Currently does nothing but take an argument and return a response from Claude vi
 
 #### To Do: 
 
+* Add streaming so you don't have to wait on longer replies
 * Add an interactive mode to allow conversational threading
 * Allow saving threads
 * Flags for max tokens, system prompt

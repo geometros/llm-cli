@@ -14,9 +14,10 @@ const (
 )
 
 type Request struct {
-	Model     string    `json:"model"`
-	Messages  []Message `json:"messages"`
-	MaxTokens int       `json:"max_tokens"`
+	Model        string    `json:"model"`
+	Messages     []Message `json:"messages"`
+	MaxTokens    int       `json:"max_tokens"`
+	SystemPrompt string    `json:"system"`
 }
 
 type Message struct {
@@ -49,7 +50,8 @@ func main() {
 		Messages: []Message{
 			{Role: "user", Content: userInput},
 		},
-		MaxTokens: 2048,
+		MaxTokens:    2048,
+		SystemPrompt: "You are a CLI assistant program. Please be brief and format your responses so they can be easily read by the user and handled by other CLI programs",
 	}
 
 	jsonData, err := json.Marshal(request)
