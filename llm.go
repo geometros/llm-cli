@@ -1,12 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
+	"strings"
 )
 
 const (
@@ -18,6 +19,7 @@ type Request struct {
 	Messages     []Message `json:"messages"`
 	MaxTokens    int       `json:"max_tokens"`
 	SystemPrompt string    `json:"system"`
+	Stream       bool      `json:"stream"`
 }
 
 type Message struct {
@@ -25,11 +27,16 @@ type Message struct {
 	Content string `json:"content"`
 }
 
-type Response struct {
-	Content []struct {
+type contentBlockDelta struct {
+	Type  string `json:"type"`
+	Delta struct {
 		Text string `json:"text"`
-	} `json:"content"`
+	} `json:"delta"`
 }
+
+//Need to get responses that look like this
+// 	event: content_block_delta
+// data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}          }
 
 func main() {
 	if len(os.Args) < 2 {
@@ -52,6 +59,7 @@ func main() {
 		},
 		MaxTokens:    2048,
 		SystemPrompt: "You are a CLI assistant program. Please be brief and format your responses so they can be easily read by the user and handled by other CLI programs",
+		Stream:       true,
 	}
 
 	jsonData, err := json.Marshal(request)
@@ -81,33 +89,61 @@ func main() {
 
 	// fmt.Printf("Received response with status code: %d\n", resp.StatusCode)
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error reading response:", err)
-		os.Exit(1)
+	//our new streaming code will need a streaming handler instead of the below
+
+	scanner := bufio.NewScanner(resp.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "data:") {
+			jsonData := strings.TrimPrefix(line, "data:")
+			//fmt.Println(jsonData)
+			var delta contentBlockDelta
+			err = json.Unmarshal([]byte(jsonData), &delta)
+			if err != nil {
+				fmt.Println("Error parsing JSON data:", err)
+				fmt.Printf("Data: %s\n", string(jsonData))
+				os.Exit(1)
+			}
+			if delta.Type == "content_block_delta" {
+				fmt.Printf(delta.Delta.Text)
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 
-	//fmt.Printf("Response body: %s\n", string(body))
+	/*
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("Error reading response:", err)
+			os.Exit(1)
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		// fmt.Printf("API request failed with status code %d\n", resp.StatusCode)
-		// fmt.Printf("Response body: %s\n", string(body))
-		os.Exit(1)
-	}
+		   fmt.Printf("Response body: %s\n", string(body))
 
-	var apiResponse Response
-	err = json.Unmarshal(body, &apiResponse)
-	if err != nil {
-		fmt.Println("Error parsing JSON response:", err)
-		fmt.Printf("Response body: %s\n", string(body))
-		os.Exit(1)
-	}
+		   	if resp.StatusCode != http.StatusOK {
+		   		fmt.Printf("API request failed with status code %d\n", resp.StatusCode)
+		   		fmt.Printf("Response body: %s\n", string(body))
+		   		os.Exit(1)
+		   	}
 
-	if len(apiResponse.Content) > 0 {
-		// fmt.Println("API Response:")
-		fmt.Println(apiResponse.Content[0].Text)
-	} else {
-		fmt.Println("No content in the response")
-		fmt.Printf("Full response: %+v\n", apiResponse)
-	}
+		   var apiResponse Response
+		   err = json.Unmarshal(body, &apiResponse)
+
+		   	if err != nil {
+		   		fmt.Println("Error parsing JSON response:", err)
+		   		fmt.Printf("Response body: %s\n", string(body))
+		   		os.Exit(1)
+		   	}
+
+		   	if len(apiResponse.Content) > 0 {
+		   		// fmt.Println("API Response:")
+		   		fmt.Println(apiResponse.Content[0].Text)
+		   	} else {
+
+		   		fmt.Println("No content in the response")
+		   		fmt.Printf("Full response: %+v\n", apiResponse)
+		   	}
+	*/
 }
