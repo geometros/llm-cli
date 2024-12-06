@@ -18,17 +18,14 @@ if (arg) {
   inputLoop()
 
   function inputLoop() {
-    input = rl.question('> ', async (input) => {if (input === 'quit' || input == 'exit'){
-      rl.close();
-      return;
-    } else {
-
+    input = rl.question('> ', async (input) => {
+      
+      const assistantContent = await main(input,chatHistory);
+      
       chatHistory.push({
         role: "user",
         content: input
       })
-      
-      const assistantContent = await main(input,chatHistory);
       
       chatHistory.push({
         role: "assistant",
@@ -38,7 +35,7 @@ if (arg) {
       rl.prompt();
       
       inputLoop();
-    }});
+    });
   }
 }
 
