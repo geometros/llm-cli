@@ -1,6 +1,7 @@
 const readline = require('readline');
 const Anthropic = require('@anthropic-ai/sdk');
 
+const systemPrompt = "You are a helpful assistant, your replies are being rendered in terminal"
 const arg = process.argv.slice(2).join(' ');
 
 if (arg) {
@@ -18,17 +19,14 @@ if (arg) {
   inputLoop()
 
   function inputLoop() {
-    input = rl.question('> ', async (input) => {if (input === 'quit' || input == 'exit'){
-      rl.close();
-      return;
-    } else {
-
+    input = rl.question('> ', async (input) => {
+      
+      const assistantContent = await main(input,chatHistory);
+      
       chatHistory.push({
         role: "user",
         content: input
       })
-      
-      const assistantContent = await main(input,chatHistory);
       
       chatHistory.push({
         role: "assistant",
@@ -38,7 +36,7 @@ if (arg) {
       rl.prompt();
       
       inputLoop();
-    }});
+    });
   }
 }
 
@@ -54,6 +52,7 @@ const stream = await client.messages.create({
     { role: 'user', content: userInput}
   ],
   model: 'claude-3-5-sonnet-latest',
+  system: systemPrompt,
   stream: true,
 });
 
