@@ -20,6 +20,7 @@ async function main() {
       process.stdout.write(event.delta.text)
     }
   }
+  process.stdout.write('\n') //newline to prevent shell weirdness
 }
 
 main();
