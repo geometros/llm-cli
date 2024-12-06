@@ -1,10 +1,14 @@
 # llm-cli
 
-I just want to be able to ask llm questions from the command line
+Script to ask Claude questions from the command line
 
-#### To Do: 
+#### Usage
 
-* Make interactive mode send context of previous messages
+* Run with an argument to get a quick answer, but bash special characters must be escaped or quoted
+* Run without an argument to enter interactive mode, any input is fine here. Ctrl + C to exit.
+
+#### To Do 
+
 * Add a system prompt
 * Flags to view, change system prompt
 * Flags to view, change default model
