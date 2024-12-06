@@ -35,7 +35,7 @@ async function main(userInput) {
 const stream = await client.messages.create({
   max_tokens: 1024,
   messages: [{ role: 'user', content: userInput}],
-  model: 'claude-3-opus-20240229',
+  model: 'claude-3-5-sonnet-latest',
   stream: true,
 });
 
