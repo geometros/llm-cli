@@ -1,6 +1,7 @@
 const readline = require('readline');
 const Anthropic = require('@anthropic-ai/sdk');
 
+const systemPrompt = "You are a helpful assistant, your replies are being rendered in terminal"
 const arg = process.argv.slice(2).join(' ');
 
 if (arg) {
@@ -51,6 +52,7 @@ const stream = await client.messages.create({
     { role: 'user', content: userInput}
   ],
   model: 'claude-3-5-sonnet-latest',
+  system: systemPrompt,
   stream: true,
 });
 
