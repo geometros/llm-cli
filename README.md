@@ -9,7 +9,6 @@ Script to ask Claude questions from the command line
 
 #### To Do 
 
-* Add a system prompt
 * Flags to view, change system prompt
 * Flags to view, change default model
 * Help page
