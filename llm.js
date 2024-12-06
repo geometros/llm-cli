@@ -7,6 +7,8 @@ if (arg) {
   const Anthropic = require('@anthropic-ai/sdk');
   main(arg);
 } else {
+  const chatHistory = [];
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -20,21 +22,37 @@ if (arg) {
       rl.close();
       return;
     } else {
-      await main(input);
+
+      chatHistory.push({
+        role: "user",
+        content: input
+      })
+      
+      const assistantContent = await main(input,chatHistory);
+      
+      chatHistory.push({
+        role: "assistant",
+        content: assistantContent
+      })
+      
       rl.prompt();
+      
       inputLoop();
     }});
   }
 }
 
-async function main(userInput) {
+async function main(userInput, chatHistory = []) {
   const client = new Anthropic({
   apiKey: process.env['ANTHROPIC_API_KEY'], 
 });
 
 const stream = await client.messages.create({
   max_tokens: 1024,
-  messages: [{ role: 'user', content: userInput}],
+  messages: [
+    ...chatHistory,
+    { role: 'user', content: userInput}
+  ],
   model: 'claude-3-5-sonnet-latest',
   stream: true,
 });
@@ -48,5 +66,7 @@ for await (const event of stream) {
   }
 }
 process.stdout.write('\n') //newline to prevent shell weirdness
+
+return replyStream;
 }
 

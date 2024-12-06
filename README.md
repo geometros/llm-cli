@@ -9,3 +9,4 @@ I just want to be able to ask llm questions from the command line
 * Flags to view, change system prompt
 * Flags to view, change default model
 * Help page
+* Error handling for API response
