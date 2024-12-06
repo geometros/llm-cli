@@ -1,13 +1,20 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
-async function main() {
+const arg = process.argv.slice(2).join(' ');
+if (arg) {
+  main(arg);
+} else {
+  console.log("No argument entered. Interactive mode coming soon, please pass a question avoiding bash special chars.");
+}
+
+async function main(userInput) {
     const client = new Anthropic({
     apiKey: process.env['ANTHROPIC_API_KEY'], 
   });
 
   const stream = await client.messages.create({
     max_tokens: 1024,
-    messages: [{ role: 'user', content: 'Hello, Claude' }],
+    messages: [{ role: 'user', content: userInput}],
     model: 'claude-3-opus-20240229',
     stream: true,
   });
@@ -22,5 +29,3 @@ async function main() {
   }
   process.stdout.write('\n') //newline to prevent shell weirdness
 }
-
-main();
